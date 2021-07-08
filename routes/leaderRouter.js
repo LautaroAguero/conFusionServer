@@ -1,7 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const mongoose = require ("mongoose");
-
+const mongoose = require("mongoose");
+const authenticate = require("../authenticate");
 
 const Leaders = require("../models/leaders");
 
@@ -10,51 +10,51 @@ const leaderRouter = express.Router();
 leaderRouter.use(bodyParser.json());
 
 leaderRouter
-  .route("/")  
+  .route("/")
 
   .get((req, res, next) => {
     Leaders.find({})
       .then(
-        (leaders) =>{
+        (leaders) => {
           res.statusCode = 200;
-          res.setHeader("Content-Type","application/json");
-          res.json(leaders)
+          res.setHeader("Content-Type", "application/json");
+          res.json(leaders);
         },
-        err => next(err)               
+        (err) => next(err)
       )
-      .catch(err=>next(err));
+      .catch((err) => next(err));
   })
 
-  .post((req, res, next) => {
+  .post(authenticate.verifyUser, (req, res, next) => {
     Leaders.create(req.body)
       .then(
-        leader => {
+        (leader) => {
           console.log("Leader created", leader);
           res.statusCode = 200;
-          res.setHeader("Content-Type","application/json");
+          res.setHeader("Content-Type", "application/json");
           res.json(leader);
         },
-        err => next(err)
+        (err) => next(err)
       )
-      .catch(err=>next(err));
+      .catch((err) => next(err));
   })
 
-  .put((req, res, next) => {
+  .put(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.end("PUT operation not supported on /leaders");
   })
 
-  .delete((req, res, next) => {
+  .delete(authenticate.verifyUser, (req, res, next) => {
     Leaders.remove({})
       .then(
-        resp => {
+        (resp) => {
           res.statusCode = 200;
-          res.setHeader("Content-Type","application/json");
+          res.setHeader("Content-Type", "application/json");
           res.json(resp);
         },
-        err => next(err)
+        (err) => next(err)
       )
-      .catch(err=>next(err));
+      .catch((err) => next(err));
   });
 leaderRouter
   .route("/:leadersId")
@@ -62,53 +62,53 @@ leaderRouter
   .get((req, res, next) => {
     Leaders.findById(req.params.leaderId)
       .then(
-        leader => {
+        (leader) => {
           res.statusCode = 200;
-          res.setHeader("Content-Type","application/json");
+          res.setHeader("Content-Type", "application/json");
           res.json(leader);
         },
-        err => next(err)
+        (err) => next(err)
       )
-      .catch(err=>next(err));    
+      .catch((err) => next(err));
   })
 
-  .post((req, res, next) => {
+  .post(authenticate.verifyUser, (req, res, next) => {
     res.statusCode = 403;
     res.end(
       "POST operation not supported on /leaders" + req.params.leadersId + "\n"
     );
   })
 
-  .put((req, res, next) => {
+  .put(authenticate.verifyUser, (req, res, next) => {
     Leaders.findByIdAndUpdate(
       req.params.leaderId,
       {
         $set: req.body,
       },
-      { new: true}
+      { new: true }
     )
       .then(
-        leader => {
-          res.statusCode=200;
-          res.setHeader("Content-Type","application/json");
+        (leader) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
           res.json(leader);
         },
-        err => next(err)
+        (err) => next(err)
       )
-      .catch(err=>next(err));
+      .catch((err) => next(err));
   })
 
-  .delete((req, res, next) => {
+  .delete(authenticate.verifyUser, (req, res, next) => {
     Leaders.findOneAndRemove(req.params.leaderId)
       .then(
-        leader => {
+        (leader) => {
           res.statusCode = 200;
-          res.setHeader("Content-Type","application/json");
+          res.setHeader("Content-Type", "application/json");
           res.json(leader);
         },
-        err => next(err)
+        (err) => next(err)
       )
-      .catch(err=>next(err));
+      .catch((err) => next(err));
   });
 
 module.exports = leaderRouter;
