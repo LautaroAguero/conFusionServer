@@ -3,7 +3,7 @@ var Schema = mongoose.Schema;
 var passportLocalMongoose = require("passport-local-mongoose");
 
 var User = new Schema({
-  firstName: {
+  firstname: {
     type: String,
     default: "",
   },
@@ -11,7 +11,7 @@ var User = new Schema({
     type: String,
     default: "",
   },
-  amdin: {
+  admin: {
     type: Boolean,
     default: false,
   },
