@@ -4,15 +4,29 @@ var User = require("../models/user");
 var passport = require("passport");
 var authenticate = require("../authenticate");
 
-var router = express.Router();
-router.use(bodyParser.json());
+var usersRouter = express.Router();
+usersRouter.use(bodyParser.json());
 
 /* GET users listing. */
-router.get("/", function (req, res, next) {
-  res.send("respond with a resource");
-});
+usersRouter.get(
+  "/",
+  authenticate.verifyUser,
+  authenticate.verifyAdmin,
+  (req, res, next) => {
+    User.find({})
+      .then(
+        (users) => {
+          res.statusCode = 200;
+          res.setHeader("Content-Type", "application/json");
+          res.json(users);
+        },
+        (err) => next(err)
+      )
+      .catch((err) => next(err));
+  }
+);
 
-router.post("/signup", (req, res, next) => {
+usersRouter.post("/signup", (req, res, next) => {
   User.register(
     new User({ username: req.body.username }),
     req.body.password,
@@ -45,7 +59,7 @@ router.post("/signup", (req, res, next) => {
   );
 });
 
-router.post("/login", passport.authenticate("local"), (req, res, next) => {
+usersRouter.post("/login", passport.authenticate("local"), (req, res, next) => {
   var token = authenticate.getToken({ _id: req.user._id });
   res.statusCode = 200;
   res.setHeader("Content-Type", "application/json");
@@ -56,7 +70,7 @@ router.post("/login", passport.authenticate("local"), (req, res, next) => {
   });
 });
 
-router.get("/logout", (req, res, next) => {
+usersRouter.get("/logout", (req, res, next) => {
   if (req.session) {
     req.session.destroy();
     res.clearCookie("session-id");
@@ -68,4 +82,4 @@ router.get("/logout", (req, res, next) => {
   }
 });
 
-module.exports = router;
+module.exports = usersRouter;
